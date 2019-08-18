@@ -3,12 +3,11 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh script: '''
-                    echo "I am in build step"
-                    chmod +x gradlew
-                    ./gradlew build
-                ''',
-            label: "Building Project"
+               sh script: '''
+				   echo "I am in build step"
+				   chmod +x gradlew
+				   ./gradlew build
+               '''
             }
         }
         stage('Test')
@@ -33,20 +32,26 @@ pipeline {
         stage('Build DockerImage')
         {
             steps {
-                sh script: '''
-                    echo "I am Building DockerImage ="
-                ''',
-            label: "Building Docker Image"
-            }
+                echo "Building DockerImage"
+                sh "docker build -t webserver -f .infra/docker/Dockerfile ."
+	    }
         }
         stage('Publish DockerImage')
         {
             steps {
                 sh script: '''
-                    echo "I am Pubishing DockerImage ="
+		    docker login -u "abhi870" -p "dockerhubpass"
+                    echo "I am Pubishing DockerImage"
+		    docker tag webserver:latest abhi870/webserver:latest
+                    docker push abhi870/webserver:latest
                 ''',
             label: "Publishing Docker Image"
-            }
-        }
+            	}
+	}
+    }
+    post{
+    	always{
+		deleteDir()
+	}
     }
 }
